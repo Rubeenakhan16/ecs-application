@@ -39,13 +39,33 @@ resource "aws_ecs_cluster" "example" {
 
 resource "aws_ecs_task_definition" "example" {
   family                   = "example-task"
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
   container_definitions    = jsonencode([{
     name      = "example"
     image     = "amazon/amazon-ecs-sample"
     essential = true
-    memory    = 128
-    cpu       = 128
+    memory    = 512  # Adjust memory and CPU based on your container requirements
+    cpu       = 256
   }])
+}
+
+resource "aws_iam_role" "task_execution_role" {
+  name               = "example-task-execution-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy_attachment" {
+  role       = aws_iam_role.task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 resource "aws_ecs_service" "example" {
@@ -57,5 +77,6 @@ resource "aws_ecs_service" "example" {
   network_configuration {
     subnets         = [aws_subnet.example.id]
     security_groups = [aws_security_group.example.id]
+    assign_public_ip = true  # For Fargate launch type, you need to assign a public IP
   }
 }
