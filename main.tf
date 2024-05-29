@@ -2,6 +2,19 @@ provider "aws" {
   region = "us-east-1"
 }
 
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnet_ids" "default" {
+  vpc_id = data.aws_vpc.default.id
+}
+
+data "aws_subnet" "default" {
+  for_each = data.aws_subnet_ids.default.ids
+  id       = each.value
+}
+
 resource "aws_ecs_cluster" "example" {
   name = "example-cluster"
 }
@@ -34,21 +47,7 @@ resource "aws_ecs_service" "example" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = [aws_default_subnet.default.id]
+    subnets = values(data.aws_subnet.default)[0].id
     assign_public_ip = true
   }
 }
-
-data "aws_subnet_ids" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
-
-data "aws_default_subnet" "default" {
-  default = true
-  depends_on = [aws_ecs_cluster.example]
-}
-
-data "aws_vpc" "default" {
-  default = true
-}
-
