@@ -8,7 +8,7 @@ data "aws_vpc" "default" {
 
 resource "aws_subnet" "example" {
   vpc_id            = data.aws_vpc.default.id
-  cidr_block        = data.aws_vpc.default.cidr_block  # Use VPC CIDR block for the subnet
+  cidr_block        = data.aws_vpc.default.cidr_block
   availability_zone = "us-east-1a"
 }
 
@@ -44,7 +44,7 @@ resource "aws_ecs_task_definition" "example" {
     name      = "example"
     image     = "amazon/amazon-ecs-sample"
     essential = true
-    memory    = 512  # Adjust memory and CPU based on your container requirements
+    memory    = 512
     cpu       = 256
   }])
 }
@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "example" {
 resource "aws_iam_role" "task_execution_role" {
   name               = "example-task-execution-role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version   = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
       Principal = {
@@ -77,6 +77,6 @@ resource "aws_ecs_service" "example" {
   network_configuration {
     subnets         = [aws_subnet.example.id]
     security_groups = [aws_security_group.example.id]
-    assign_public_ip = true  # For Fargate launch type, you need to assign a public IP
+    assign_public_ip = true
   }
 }
