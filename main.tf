@@ -2,12 +2,12 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_vpc" "example" {
-  cidr_block = "10.0.0.0/16"
+data "aws_vpc" "default" {
+  default = true
 }
 
 resource "aws_subnet" "example" {
-  vpc_id            = aws_vpc.example.id
+  vpc_id            = data.aws_vpc.default.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1a"
 }
@@ -16,7 +16,7 @@ resource "aws_security_group" "example" {
   name        = "example-security-group"
   description = "Allow inbound traffic"
   
-  vpc_id = aws_vpc.example.id
+  vpc_id = data.aws_vpc.default.id
 
   ingress {
     from_port   = 0
@@ -37,6 +37,18 @@ resource "aws_ecs_cluster" "example" {
   name = "example-cluster"
 }
 
+resource "aws_ecs_task_definition" "example" {
+  family                   = "example-task"
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
+  container_definitions    = jsonencode([{
+    name      = "example"
+    image     = "amazon/amazon-ecs-sample"
+    essential = true
+    memory    = 512  # Adjust memory and CPU based on your container requirements
+    cpu       = 256
+  }])
+}
+
 resource "aws_iam_role" "task_execution_role" {
   name               = "example-task-execution-role"
   assume_role_policy = jsonencode({
@@ -54,18 +66,6 @@ resource "aws_iam_role" "task_execution_role" {
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy_attachment" {
   role       = aws_iam_role.task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-resource "aws_ecs_task_definition" "example" {
-  family                   = "example-task"
-  execution_role_arn       = aws_iam_role.task_execution_role.arn
-  container_definitions    = jsonencode([{
-    name      = "example"
-    image     = "nginx:latest"
-    essential = true
-    memory    = 512  # Adjust memory and CPU based on your container requirements
-    cpu       = 256
-  }])
 }
 
 resource "aws_ecs_service" "example" {
