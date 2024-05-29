@@ -8,7 +8,7 @@ data "aws_vpc" "default" {
 
 resource "aws_subnet" "example" {
   vpc_id            = data.aws_vpc.default.id
-  cidr_block        = "10.0.1.0/24"
+  cidr_block        = data.aws_vpc.default.cidr_block  # Use VPC CIDR block for the subnet
   availability_zone = "us-east-1a"
 }
 
