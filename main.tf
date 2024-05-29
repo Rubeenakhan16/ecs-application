@@ -33,26 +33,10 @@ resource "aws_ecs_service" "example" {
   task_definition = aws_ecs_task_definition.example.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+
   network_configuration {
     subnets         = [aws_subnet.example.id]
-    security_groups = [aws_security_group.example.id]
-  }
-}
-
-resource "aws_security_group" "example" {
-  vpc_id = aws_vpc.example.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    # Use the default security group associated with the VPC
+    security_groups = [aws_vpc.example.default_security_group_id]
   }
 }
