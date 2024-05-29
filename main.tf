@@ -2,19 +2,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnet_ids" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
-
-data "aws_subnet" "default" {
-  for_each = data.aws_subnet_ids.default.ids
-  id       = each.value
-}
-
 resource "aws_ecs_cluster" "example" {
   name = "example-cluster"
 }
@@ -28,7 +15,7 @@ resource "aws_ecs_task_definition" "example" {
 
   container_definitions = jsonencode([{
     name      = "example-container"
-    image     = "amazon/amazon-ecs-sample"
+    image     = "nginx"
     essential = true
     portMappings = [
       {
@@ -47,7 +34,7 @@ resource "aws_ecs_service" "example" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = values(data.aws_subnet.default)[0].id
+    subnets = aws_vpc.default.subnet_ids
     assign_public_ip = true
   }
 }
