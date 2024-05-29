@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "example" {
     image     = "amazon/amazon-ecs-sample"
     essential = true
     memory    = 128
-    cpu       = 128
+    cpu       = 128  # Define the CPU attribute here
   }])
   # Specify the launch type as FARGATE
   network_mode             = "awsvpc"  # Required when using FARGATE
