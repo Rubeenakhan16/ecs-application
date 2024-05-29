@@ -25,6 +25,9 @@ resource "aws_ecs_task_definition" "example" {
     memory    = 128
     cpu       = 128
   }])
+  # Specify the launch type as FARGATE
+  network_mode             = "awsvpc"  # Required when using FARGATE
+  requires_compatibilities = ["FARGATE"]
 }
 
 resource "aws_ecs_service" "example" {
