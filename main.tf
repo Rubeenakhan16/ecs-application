@@ -12,6 +12,27 @@ resource "aws_subnet" "example" {
   availability_zone = "us-east-1a"
 }
 
+resource "aws_security_group" "example" {
+  name        = "example-security-group"
+  description = "Allow inbound traffic"
+  
+  vpc_id = aws_vpc.example.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_ecs_cluster" "example" {
   name = "example-cluster"
 }
@@ -35,6 +56,6 @@ resource "aws_ecs_service" "example" {
   launch_type     = "FARGATE"
   network_configuration {
     subnets         = [aws_subnet.example.id]
-    security_groups = ["sg-0188ea9c19e25dad7"] // Replace with your default security group ID
+    security_groups = [aws_security_group.example.id]
   }
 }
